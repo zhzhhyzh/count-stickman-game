@@ -428,6 +428,9 @@ export class LevelGenerator {
         bossGroup.position.set(0, 0, -trackLength);
         this.scene.add(bossGroup);
         this.meshes.push(bossGroup);
+        this.boss.meshGroup = bossGroup;
+        this.boss.defeatTime = 0;
+        this.boss.isDefeating = false;
 
         // Boss health label
         const canvas = document.createElement('canvas');
@@ -448,6 +451,89 @@ export class LevelGenerator {
         label.userData.dynamic = true;
         this.scene.add(label);
         this.meshes.push(label);
+    }
+
+    shakeBoss() {
+        if (!this.boss || !this.boss.meshGroup) return;
+        const group = this.boss.meshGroup;
+        // Quick shake
+        const shakeX = (Math.random() - 0.5) * 0.4;
+        const shakeZ = (Math.random() - 0.5) * 0.2;
+        group.position.x = shakeX;
+        group.position.z += shakeZ;
+        // Flash red
+        group.traverse(child => {
+            if (child.material && child.material.emissive) {
+                child.material.emissive = new THREE.Color(0xff0000);
+                child.material.emissiveIntensity = 0.6;
+            }
+        });
+        setTimeout(() => {
+            if (group) {
+                group.position.x = 0;
+                group.traverse(child => {
+                    if (child.material && child.material.emissiveIntensity) {
+                        child.material.emissiveIntensity = 0;
+                    }
+                });
+            }
+        }, 80);
+    }
+
+    playBossDefeatAnimation() {
+        if (!this.boss || !this.boss.meshGroup) return;
+        this.boss.isDefeating = true;
+        this.boss.defeatTime = 0;
+    }
+
+    updateBossDefeat(delta) {
+        if (!this.boss || !this.boss.isDefeating || !this.boss.meshGroup) return;
+        
+        this.boss.defeatTime += delta;
+        const t = this.boss.defeatTime;
+        const group = this.boss.meshGroup;
+
+        // Stage 1: Shake violently (0 - 0.5s)
+        if (t < 0.5) {
+            group.position.x = (Math.random() - 0.5) * t * 4;
+            group.rotation.z = (Math.random() - 0.5) * t * 0.5;
+            // Flash colors
+            group.traverse(child => {
+                if (child.material && child.material.color) {
+                    child.material.emissive = new THREE.Color(0xff0000);
+                    child.material.emissiveIntensity = Math.sin(t * 40) * 0.5 + 0.5;
+                }
+            });
+        }
+        // Stage 2: Fall apart and shrink (0.5 - 1.2s)
+        else if (t < 1.2) {
+            const fallProgress = (t - 0.5) / 0.7;
+            // Collapse downward
+            group.position.y = -fallProgress * 3;
+            group.rotation.x = fallProgress * 0.8;
+            group.rotation.z = fallProgress * 0.5;
+            // Scale down
+            const scale = 1 - fallProgress * 0.8;
+            group.scale.set(scale, scale * (1 - fallProgress * 0.3), scale);
+            // Fade children
+            group.traverse(child => {
+                if (child.material) {
+                    child.material.transparent = true;
+                    child.material.opacity = 1 - fallProgress;
+                }
+            });
+            // Scatter parts
+            group.children.forEach((child, i) => {
+                child.position.x += (Math.random() - 0.5) * delta * 8;
+                child.position.y += (Math.random() - 0.5) * delta * 5;
+                child.rotation.x += delta * (i + 1) * 3;
+            });
+        }
+        // Stage 3: Remove
+        else {
+            this.scene.remove(group);
+            this.boss.isDefeating = false;
+        }
     }
 
     createDecorations(trackLength) {

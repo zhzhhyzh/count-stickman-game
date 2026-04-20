@@ -297,7 +297,7 @@ export class CrowdManager {
     }
 
     update(delta) {
-        this.animTime += delta * 8;
+        this.animTime += delta * 5; // Slower animation cycle
         
         // Animate stickmen running
         if (this.playerStickmen.length > 0) {
@@ -306,10 +306,6 @@ export class CrowdManager {
                 if (stickman.userData.spawning) {
                     const elapsed = this.animTime - stickman.userData.spawnTime;
                     const t = Math.min(elapsed * 2, 1);
-                    // Elastic ease-out
-                    const bounce = t < 1 
-                        ? 1 - Math.pow(1 - t, 3) * Math.cos(t * Math.PI * 2) * 0.3 - (1 - Math.pow(1 - t, 3)) * -1 + 1
-                        : 1;
                     const scale = Math.min(t * 1.2, 1) * (1 + Math.sin(t * Math.PI) * 0.3);
                     stickman.scale.set(
                         Math.min(scale, 1),
@@ -322,21 +318,36 @@ export class CrowdManager {
                     }
                 }
 
-                const offset = i * 0.5;
-                // Bobbing motion
+                const offset = i * 0.7;
+                const walkCycle = this.animTime + offset;
+                
+                // Bobbing motion - more pronounced up/down
                 if (!stickman.userData.spawning) {
-                    stickman.position.y = Math.abs(Math.sin(this.animTime + offset)) * 0.15;
+                    stickman.position.y = Math.abs(Math.sin(walkCycle * 2)) * 0.25;
                 }
                 
-                // Leg animation
+                // Body lean forward while running
                 const children = stickman.children;
-                if (children.length >= 4) {
-                    children[2].rotation.x = Math.sin(this.animTime + offset) * 0.4;
-                    children[3].rotation.x = -Math.sin(this.animTime + offset) * 0.4;
+                // Body tilt (children[0] = body)
+                if (children.length >= 1) {
+                    children[0].rotation.x = 0.15 + Math.sin(walkCycle) * 0.05;
                 }
+                // Head bob (children[1] = head)
+                if (children.length >= 2) {
+                    children[1].rotation.x = Math.sin(walkCycle * 2) * 0.08;
+                }
+                
+                // Leg animation - much larger swing
+                if (children.length >= 4) {
+                    children[2].rotation.x = Math.sin(walkCycle) * 0.8; // left leg big swing
+                    children[3].rotation.x = -Math.sin(walkCycle) * 0.8; // right leg big swing
+                }
+                // Arm animation - opposite to legs, big swing
                 if (children.length >= 6) {
-                    children[4].rotation.x = -Math.sin(this.animTime + offset) * 0.3;
-                    children[5].rotation.x = Math.sin(this.animTime + offset) * 0.3;
+                    children[4].rotation.x = -Math.sin(walkCycle) * 0.7; // left arm
+                    children[4].rotation.z = 0.3 + Math.sin(walkCycle * 2) * 0.1;
+                    children[5].rotation.x = Math.sin(walkCycle) * 0.7; // right arm
+                    children[5].rotation.z = -0.3 - Math.sin(walkCycle * 2) * 0.1;
                 }
             });
         }

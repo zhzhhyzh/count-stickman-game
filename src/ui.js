@@ -28,6 +28,9 @@ export class UIManager {
         // Previous count for pulse animation
         this.prevCount = 0;
         
+        // Boss health bar element
+        this.bossHealthBar = null;
+        
         this.setupButtons();
         this.updateHUDInfo();
         this.startShakeLoop();
@@ -264,5 +267,107 @@ export class UIManager {
             this.container.appendChild(confetti);
             setTimeout(() => confetti.remove(), 2500);
         }
+    }
+
+    // ============ BOSS HEALTH BAR ============
+    showBossHealthBar(maxHealth) {
+        // Remove existing
+        this.hideBossHealthBar();
+
+        const wrapper = document.createElement('div');
+        wrapper.id = 'boss-health-wrapper';
+        wrapper.style.cssText = `
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            max-width: 80vw;
+            z-index: 50;
+            pointer-events: none;
+            animation: slideInUp 0.5s ease;
+        `;
+
+        const label = document.createElement('div');
+        label.style.cssText = `
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 4px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        `;
+        label.textContent = `👑 GIANT KING`;
+        wrapper.appendChild(label);
+
+        const barBg = document.createElement('div');
+        barBg.style.cssText = `
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #9C27B0;
+            box-shadow: 0 0 10px rgba(156, 39, 176, 0.5);
+        `;
+
+        const barFill = document.createElement('div');
+        barFill.id = 'boss-health-fill';
+        barFill.style.cssText = `
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #f44336, #E91E63, #9C27B0);
+            border-radius: 8px;
+            transition: width 0.15s ease;
+            box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3);
+        `;
+        barBg.appendChild(barFill);
+        wrapper.appendChild(barBg);
+
+        const hpText = document.createElement('div');
+        hpText.id = 'boss-health-text';
+        hpText.style.cssText = `
+            color: #fff;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 3px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        `;
+        hpText.textContent = `${maxHealth} / ${maxHealth}`;
+        wrapper.appendChild(hpText);
+
+        this.container.appendChild(wrapper);
+        this.bossHealthBar = wrapper;
+    }
+
+    updateBossHealthBar(remaining, max) {
+        const fill = document.getElementById('boss-health-fill');
+        const text = document.getElementById('boss-health-text');
+        if (fill) {
+            const pct = Math.max(0, (remaining / max) * 100);
+            fill.style.width = `${pct}%`;
+            
+            // Change color when low
+            if (pct < 25) {
+                fill.style.background = 'linear-gradient(90deg, #f44336, #ff5722)';
+            } else if (pct < 50) {
+                fill.style.background = 'linear-gradient(90deg, #f44336, #E91E63)';
+            }
+        }
+        if (text) {
+            text.textContent = `${Math.max(0, remaining)} / ${max}`;
+        }
+    }
+
+    hideBossHealthBar() {
+        if (this.bossHealthBar) {
+            this.bossHealthBar.style.transition = 'opacity 0.3s ease';
+            this.bossHealthBar.style.opacity = '0';
+            const el = this.bossHealthBar;
+            setTimeout(() => el.remove(), 300);
+            this.bossHealthBar = null;
+        }
+        const existing = document.getElementById('boss-health-wrapper');
+        if (existing) existing.remove();
     }
 }

@@ -26,7 +26,7 @@ export class Game {
         // Player
         this.playerCrowd = null;
         this.playerX = 0;
-        this.speed = 15;
+        this.speed = 9;
         this.trackZ = 0;
         
         // Level
@@ -183,7 +183,7 @@ export class Game {
         this.state = 'playing';
         this.trackZ = 0;
         this.playerX = 0;
-        this.speed = 15;
+        this.speed = 9;
         
         // Init and start audio
         this.audio.init();
@@ -233,6 +233,12 @@ export class Game {
     }
 
     update(delta) {
+        if (this.state === 'boss_defeated') {
+            this.crowdManager.update(delta);
+            this.levelGenerator.updateBossDefeat(delta);
+            return;
+        }
+
         if (this.state === 'fighting') {
             this.updateFight(delta);
             this.crowdManager.update(delta);
@@ -455,21 +461,42 @@ export class Game {
                 this.audio.playFightHit();
             }
 
-            // Update enemy visual count
-            this.levelGenerator.updateEnemyLabel(enemy);
+            // Update enemy visual count or boss health bar
+            if (enemy.isBoss) {
+                this.ui.updateBossHealthBar(enemy.remainingCount, enemy.count);
+                this.levelGenerator.shakeBoss();
+            } else {
+                this.levelGenerator.updateEnemyLabel(enemy);
+            }
 
             // Check fight outcome
             if (enemy.remainingCount <= 0) {
                 // Player wins
                 enemy.defeated = true;
-                this.crowdManager.removeEnemyCrowd(enemy);
-                this.state = 'playing';
-                this.speed = 15;
-                this.fightingEnemy = null;
-                this.fightCameraTime = 0;
-                this.camera.position.y = 12;
+                if (enemy.isBoss) {
+                    // Boss defeat animation
+                    this.ui.hideBossHealthBar();
+                    this.levelGenerator.playBossDefeatAnimation();
+                    this.ui.screenShake(15);
+                    this.crowdManager.spawnSparks(
+                        new THREE.Vector3(0, 3, -enemy.z), 0x9C27B0, 20
+                    );
+                    // Delay win screen for dramatic effect
+                    setTimeout(() => this.winGame(), 1200);
+                    this.state = 'boss_defeated';
+                    this.fightingEnemy = null;
+                    this.fightCameraTime = 0;
+                } else {
+                    this.crowdManager.removeEnemyCrowd(enemy);
+                    this.state = 'playing';
+                    this.speed = 9;
+                    this.fightingEnemy = null;
+                    this.fightCameraTime = 0;
+                    this.camera.position.y = 12;
+                }
             } else if (this.crowdManager.getPlayerCount() <= 0) {
                 // Player loses
+                this.ui.hideBossHealthBar();
                 this.loseGame();
                 this.fightingEnemy = null;
                 this.fightCameraTime = 0;
@@ -491,6 +518,7 @@ export class Game {
         this.state = 'fighting';
         this.audio.playBossAppear();
         this.ui.screenShake(12);
+        this.fightCameraTime = 0;
         this.fightingEnemy = {
             z: boss.z,
             count: boss.health,
@@ -501,6 +529,9 @@ export class Game {
         };
         this.fightTimer = 0;
         this.speed = 0;
+
+        // Show boss health bar
+        this.ui.showBossHealthBar(boss.health);
 
         // Override updateFight end condition for boss
         const originalCheck = this.fightingEnemy;
