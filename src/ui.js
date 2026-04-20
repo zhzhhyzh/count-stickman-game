@@ -67,6 +67,23 @@ export class UIManager {
             });
         });
 
+        // Win screen upgrade buttons
+        document.getElementById('win-upgrade-crowd-btn').addEventListener('click', () => {
+            if (this.game.upgradecrowd()) {
+                if (this.game.audio.initialized) this.game.audio.playGateGood();
+                this.updateWinUpgradeInfo();
+                this.pulseElement(document.getElementById('win-upgrade-crowd-btn'));
+            }
+        });
+
+        document.getElementById('win-upgrade-strength-btn').addEventListener('click', () => {
+            if (this.game.upgradeStrength()) {
+                if (this.game.audio.initialized) this.game.audio.playGateGood();
+                this.updateWinUpgradeInfo();
+                this.pulseElement(document.getElementById('win-upgrade-strength-btn'));
+            }
+        });
+
         document.getElementById('retry-btn').addEventListener('click', () => {
             if (this.game.audio.initialized) this.game.audio.playClick();
             this.transitionOut(this.loseScreen, () => {
@@ -230,9 +247,18 @@ export class UIManager {
         setTimeout(() => {
             this.transitionIn(this.winScreen);
             document.getElementById('win-coins').textContent = `+${coins} 🪙`;
+            this.updateWinUpgradeInfo();
             // Confetti burst
             this.spawnConfetti();
         }, 300);
+    }
+
+    updateWinUpgradeInfo() {
+        document.getElementById('win-total-coins').textContent = `Total: 🪙 ${this.game.coins}`;
+        document.getElementById('win-crowd-level').textContent = `Lv. ${this.game.crowdUpgrade}`;
+        document.getElementById('win-strength-level').textContent = `Lv. ${this.game.strengthUpgrade}`;
+        document.getElementById('win-upgrade-crowd-btn').textContent = `🪙 ${this.game.crowdUpgrade * 50}`;
+        document.getElementById('win-upgrade-strength-btn').textContent = `🪙 ${this.game.strengthUpgrade * 75}`;
     }
 
     showLose() {
