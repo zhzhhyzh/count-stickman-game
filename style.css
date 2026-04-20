@@ -41,7 +41,18 @@ body {
     padding: 8px 16px;
     border-radius: 20px;
     font-size: 16px;
+}
+
+#count-display {
+    background: rgba(0, 150, 255, 0.85) !important;
+    font-size: 22px !important;
     font-weight: bold;
+    padding: 10px 22px !important;
+    border-radius: 25px !important;
+    box-shadow: 0 4px 15px rgba(0, 150, 255, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    min-width: 80px;
+    text-align: center;
 }
 
 .screen {
