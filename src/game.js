@@ -21,7 +21,7 @@ export class Game {
         // Fighting state
         this.fightingEnemy = null;
         this.fightTimer = 0;
-        this.fightInterval = 0.08; // Time between each stickman removal
+        this.fightInterval = 0.12; // Time between each stickman removal
         
         // Player
         this.playerCrowd = null;
@@ -237,6 +237,15 @@ export class Game {
             this.updateFight(delta);
             this.crowdManager.update(delta);
             this.ui.updateCount(this.crowdManager.getPlayerCount());
+            
+            // Camera shake and zoom during fight
+            this.fightCameraTime = (this.fightCameraTime || 0) + delta;
+            const shakeX = Math.sin(this.fightCameraTime * 25) * 0.15;
+            const shakeY = Math.cos(this.fightCameraTime * 30) * 0.08;
+            this.camera.position.x = this.playerX * 0.3 + shakeX;
+            this.camera.position.z = -this.trackZ + 12; // Zoom in closer
+            this.camera.position.y = 10 + shakeY;
+            this.camera.lookAt(this.playerX * 0.3, 1, -this.trackZ - 5);
             return;
         }
 
@@ -398,7 +407,17 @@ export class Game {
                 this.fightingEnemy = enemy;
                 this.fightingEnemy.remainingCount = enemy.count;
                 this.fightTimer = 0;
+                this.fightCameraTime = 0;
                 this.speed = 0;
+                this.audio.playHit();
+                this.ui.screenShake(10);
+                // Big collision flash
+                this.crowdManager.spawnImpactFlash(
+                    new THREE.Vector3(this.playerX, 1, -this.trackZ), 0xFFFFFF
+                );
+                this.crowdManager.spawnSparks(
+                    new THREE.Vector3(this.playerX, 1, -this.trackZ), 0xFFAA00, 10
+                );
                 return;
             }
         }
@@ -447,10 +466,13 @@ export class Game {
                 this.state = 'playing';
                 this.speed = 15;
                 this.fightingEnemy = null;
+                this.fightCameraTime = 0;
+                this.camera.position.y = 12;
             } else if (this.crowdManager.getPlayerCount() <= 0) {
                 // Player loses
                 this.loseGame();
                 this.fightingEnemy = null;
+                this.fightCameraTime = 0;
             }
         }
 
