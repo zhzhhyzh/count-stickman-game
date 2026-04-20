@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 
 export class CrowdManager {
-    constructor(scene) {
+    constructor(scene, game) {
         this.scene = scene;
+        this.game = game;
         this.playerStickmen = [];
         this.playerGroup = null;
         this.playerCount = 0;
@@ -50,7 +51,8 @@ export class CrowdManager {
     }
 
     addStickmanToGroup(index) {
-        const stickman = this.createStickman(0x2196F3);
+        const color = this.game ? this.game.getPlayerColor() : 0x2196F3;
+        const stickman = this.createStickman(color);
         const pos = this.getFormationPosition(index);
         stickman.position.set(pos.x, 0, pos.z);
         stickman.userData.index = index;
@@ -130,7 +132,7 @@ export class CrowdManager {
             if (this.playerStickmen.length > 1) {
                 const stickman = this.playerStickmen.pop();
                 // Instead of just removing, launch it as a ragdoll
-                this.launchRagdoll(stickman, 0x2196F3);
+                this.launchRagdoll(stickman, this.game ? this.game.getPlayerColor() : 0x2196F3);
                 this.playerGroup.remove(stickman);
             }
         }

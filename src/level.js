@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 
 export class LevelGenerator {
-    constructor(scene) {
+    constructor(scene, game) {
         this.scene = scene;
+        this.game = game;
         this.gates = [];
         this.obstacles = [];
         this.enemies = [];
@@ -87,8 +88,9 @@ export class LevelGenerator {
 
         // Ground plane - lush green with variation
         const groundGeo = new THREE.PlaneGeometry(200, trackLength + 100);
+        const groundColor = (this.game && this.game.getActiveTheme()) ? this.game.getActiveTheme().ground : 0x66BB6A;
         const groundMat = new THREE.MeshStandardMaterial({ 
-            color: 0x66BB6A, 
+            color: groundColor, 
             roughness: 1.0 
         });
         const ground = new THREE.Mesh(groundGeo, groundMat);

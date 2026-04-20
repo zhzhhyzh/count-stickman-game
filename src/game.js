@@ -18,6 +18,31 @@ export class Game {
         this.crowdUpgrade = 1;
         this.strengthUpgrade = 1;
         
+        // Skins & Themes
+        this.skins = [
+            { id: 'blue', name: 'Classic Blue', color: 0x2196F3, price: 0, owned: true },
+            { id: 'green', name: 'Forest', color: 0x4CAF50, price: 10, owned: false },
+            { id: 'orange', name: 'Sunset', color: 0xFF9800, price: 10, owned: false },
+            { id: 'purple', name: 'Royal', color: 0x9C27B0, price: 15, owned: false },
+            { id: 'pink', name: 'Bubblegum', color: 0xE91E63, price: 15, owned: false },
+            { id: 'cyan', name: 'Ice', color: 0x00BCD4, price: 20, owned: false },
+            { id: 'yellow', name: 'Gold', color: 0xFFEB3B, price: 20, owned: false },
+            { id: 'white', name: 'Ghost', color: 0xFFFFFF, price: 25, owned: false },
+            { id: 'black', name: 'Shadow', color: 0x333333, price: 25, owned: false },
+            { id: 'rainbow', name: 'Rainbow', color: 0xFF1744, price: 0, owned: false, shareUnlock: true },
+        ];
+        this.equippedSkin = 'blue';
+        
+        this.themes = [
+            { id: 'default', name: 'Day', colors: ['#1a0533','#4a90d9','#87CEEB','#b8e4f0','#f0f8ff'], fog: 0xb8e4f0, ground: 0x66BB6A, price: 0, owned: true },
+            { id: 'sunset', name: 'Sunset', colors: ['#1a0011','#ff6b35','#ff8c61','#ffc89e','#fff3e0'], fog: 0xffc89e, ground: 0x8D6E63, price: 15, owned: false },
+            { id: 'night', name: 'Night', colors: ['#000011','#0d1b2a','#1b2838','#2d4059','#3d5a80'], fog: 0x1b2838, ground: 0x2E7D32, price: 15, owned: false },
+            { id: 'candy', name: 'Candy', colors: ['#4a0072','#c51162','#ff6090','#ff80ab','#ffe0f0'], fog: 0xff80ab, ground: 0x81C784, price: 20, owned: false },
+            { id: 'ocean', name: 'Ocean', colors: ['#001a33','#003366','#006699','#3399cc','#99ccff'], fog: 0x3399cc, ground: 0x26A69A, price: 20, owned: false },
+            { id: 'volcano', name: 'Volcano', colors: ['#1a0000','#4d0000','#800000','#cc3300','#ff6600'], fog: 0xcc3300, ground: 0x5D4037, price: 25, owned: false },
+        ];
+        this.equippedTheme = 'default';
+        
         // Fighting state
         this.fightingEnemy = null;
         this.fightTimer = 0;
@@ -50,8 +75,8 @@ export class Game {
         this.setupInput();
         
         this.ui = new UIManager(this);
-        this.crowdManager = new CrowdManager(this.scene);
-        this.levelGenerator = new LevelGenerator(this.scene);
+        this.crowdManager = new CrowdManager(this.scene, this);
+        this.levelGenerator = new LevelGenerator(this.scene, this);
         this.audio = new AudioManager();
         
         this.animate();
@@ -75,23 +100,8 @@ export class Game {
     setupScene() {
         this.scene = new THREE.Scene();
         
-        // Gradient sky background
-        const skyCanvas = document.createElement('canvas');
-        skyCanvas.width = 1;
-        skyCanvas.height = 512;
-        const skyCtx = skyCanvas.getContext('2d');
-        const gradient = skyCtx.createLinearGradient(0, 0, 0, 512);
-        gradient.addColorStop(0, '#1a0533');
-        gradient.addColorStop(0.2, '#4a90d9');
-        gradient.addColorStop(0.5, '#87CEEB');
-        gradient.addColorStop(0.8, '#b8e4f0');
-        gradient.addColorStop(1.0, '#f0f8ff');
-        skyCtx.fillStyle = gradient;
-        skyCtx.fillRect(0, 0, 1, 512);
-        const skyTexture = new THREE.CanvasTexture(skyCanvas);
-        this.scene.background = skyTexture;
-        
-        this.scene.fog = new THREE.FogExp2(0xb8e4f0, 0.006);
+        // Apply active theme (gradient sky + fog)
+        this.applyTheme();
     }
 
     setupCamera() {
@@ -163,14 +173,14 @@ export class Game {
             if (this.state !== 'playing') return;
             this.isDragging = true;
             this.lastInputX = e.touches[0].clientX;
-        });
+        }, { passive: true });
         canvas.addEventListener('touchmove', (e) => {
             if (!this.isDragging || this.state !== 'playing') return;
             e.preventDefault();
             const deltaX = (e.touches[0].clientX - this.lastInputX) * 0.02;
             this.playerX = Math.max(-3.5, Math.min(3.5, this.playerX + deltaX));
             this.lastInputX = e.touches[0].clientX;
-        });
+        }, { passive: false });
         canvas.addEventListener('touchend', () => { this.isDragging = false; });
 
         // Keyboard
@@ -584,12 +594,95 @@ export class Game {
         return false;
     }
 
+    buySkin(skinId) {
+        const skin = this.skins.find(s => s.id === skinId);
+        if (!skin || skin.owned) return false;
+        if (skin.shareUnlock) return false;
+        if (this.coins < skin.price) return false;
+        this.coins -= skin.price;
+        skin.owned = true;
+        this.equippedSkin = skinId;
+        this.saveProgress();
+        return true;
+    }
+
+    equipSkin(skinId) {
+        const skin = this.skins.find(s => s.id === skinId);
+        if (!skin || !skin.owned) return false;
+        this.equippedSkin = skinId;
+        this.saveProgress();
+        return true;
+    }
+
+    shareForSkin(skinId) {
+        const skin = this.skins.find(s => s.id === skinId);
+        if (!skin || !skin.shareUnlock || skin.owned) return false;
+        skin.owned = true;
+        this.equippedSkin = skinId;
+        this.saveProgress();
+        return true;
+    }
+
+    buyTheme(themeId) {
+        const theme = this.themes.find(t => t.id === themeId);
+        if (!theme || theme.owned) return false;
+        if (this.coins < theme.price) return false;
+        this.coins -= theme.price;
+        theme.owned = true;
+        this.equippedTheme = themeId;
+        this.applyTheme();
+        this.saveProgress();
+        return true;
+    }
+
+    equipTheme(themeId) {
+        const theme = this.themes.find(t => t.id === themeId);
+        if (!theme || !theme.owned) return false;
+        this.equippedTheme = themeId;
+        this.applyTheme();
+        this.saveProgress();
+        return true;
+    }
+
+    getPlayerColor() {
+        const skin = this.skins.find(s => s.id === this.equippedSkin);
+        return skin ? skin.color : 0x2196F3;
+    }
+
+    getActiveTheme() {
+        return this.themes.find(t => t.id === this.equippedTheme) || this.themes[0];
+    }
+
+    applyTheme() {
+        const theme = this.getActiveTheme();
+        // Update sky
+        const skyCanvas = document.createElement('canvas');
+        skyCanvas.width = 1;
+        skyCanvas.height = 512;
+        const skyCtx = skyCanvas.getContext('2d');
+        const gradient = skyCtx.createLinearGradient(0, 0, 0, 512);
+        gradient.addColorStop(0, theme.colors[0]);
+        gradient.addColorStop(0.2, theme.colors[1]);
+        gradient.addColorStop(0.5, theme.colors[2]);
+        gradient.addColorStop(0.8, theme.colors[3]);
+        gradient.addColorStop(1.0, theme.colors[4]);
+        skyCtx.fillStyle = gradient;
+        skyCtx.fillRect(0, 0, 1, 512);
+        const skyTexture = new THREE.CanvasTexture(skyCanvas);
+        this.scene.background = skyTexture;
+        this.scene.fog = new THREE.FogExp2(theme.fog, 0.006);
+    }
+
     saveProgress() {
         const data = {
             level: this.level,
             coins: this.coins,
             crowdUpgrade: this.crowdUpgrade,
-            strengthUpgrade: this.strengthUpgrade
+            strengthUpgrade: this.strengthUpgrade,
+            ownedSkins: this.skins.filter(s => s.owned).map(s => s.id),
+            equippedSkin: this.equippedSkin,
+            ownedThemes: this.themes.filter(t => t.owned).map(t => t.id),
+            equippedTheme: this.equippedTheme
         };
         localStorage.setItem('countMasters', JSON.stringify(data));
     }
@@ -602,6 +695,14 @@ export class Game {
             this.coins = parsed.coins || 0;
             this.crowdUpgrade = parsed.crowdUpgrade || 1;
             this.strengthUpgrade = parsed.strengthUpgrade || 1;
+            if (parsed.ownedSkins) {
+                this.skins.forEach(s => { s.owned = parsed.ownedSkins.includes(s.id); });
+            }
+            if (parsed.equippedSkin) this.equippedSkin = parsed.equippedSkin;
+            if (parsed.ownedThemes) {
+                this.themes.forEach(t => { t.owned = parsed.ownedThemes.includes(t.id); });
+            }
+            if (parsed.equippedTheme) this.equippedTheme = parsed.equippedTheme;
         }
     }
 

@@ -8,7 +8,6 @@ body {
     overflow: hidden;
     background: #1a1a2e;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    touch-action: none;
 }
 
 #game-container {
@@ -21,6 +20,7 @@ body {
     display: block;
     width: 100%;
     height: 100%;
+    touch-action: none;
 }
 
 #hud {
@@ -68,6 +68,7 @@ body {
     background: rgba(0, 0, 0, 0.85);
     z-index: 100;
     gap: 15px;
+    touch-action: auto;
 }
 
 .screen.hidden {
@@ -151,6 +152,116 @@ body {
     flex-direction: column;
     gap: 10px;
     margin: 15px 0;
+}
+
+/* Shop Styles */
+.shop-coins {
+    color: #ffd700;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 5px 0 10px;
+}
+
+.shop-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.shop-tab {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.shop-tab.active {
+    background: rgba(0, 200, 255, 0.6);
+    box-shadow: 0 2px 10px rgba(0, 200, 255, 0.3);
+}
+
+.shop-panel {
+    max-height: 300px;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 400px;
+}
+
+.shop-panel.hidden {
+    display: none;
+}
+
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 5px;
+}
+
+.shop-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.shop-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.shop-item.owned {
+    border-color: rgba(0, 200, 100, 0.5);
+}
+
+.shop-item.equipped {
+    border-color: #00d4ff;
+    background: rgba(0, 212, 255, 0.15);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+.shop-item .skin-preview {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.shop-item .theme-preview {
+    width: 60px;
+    height: 40px;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.shop-item .item-name {
+    color: white;
+    font-size: 11px;
+    text-align: center;
+}
+
+.shop-item .item-price {
+    font-size: 12px;
+    color: #ffd700;
+    font-weight: bold;
+}
+
+.shop-item .item-price.free {
+    color: #4CAF50;
+}
+
+.shop-item .item-price.owned-label {
+    color: #aaa;
 }
 
 /* Animations */

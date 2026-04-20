@@ -22,7 +22,29 @@
             <h1>COUNT MASTERS</h1>
             <p>Stickman Games</p>
             <button id="play-btn" class="btn">▶ PLAY</button>
+            <button id="shop-btn" class="btn btn-secondary">🛒 SHOP</button>
             <button id="upgrade-btn" class="btn btn-secondary">⬆ UPGRADES</button>
+        </div>
+        
+        <!-- Shop Screen -->
+        <div id="shop-screen" class="screen hidden">
+            <h2>🛒 SHOP</h2>
+            <p id="shop-coins" class="shop-coins">🪙 0</p>
+            
+            <div class="shop-tabs">
+                <button id="tab-skins" class="shop-tab active">🎨 Skins</button>
+                <button id="tab-themes" class="shop-tab">🌄 Themes</button>
+            </div>
+            
+            <div id="skins-panel" class="shop-panel">
+                <div id="skins-grid" class="shop-grid"></div>
+            </div>
+            
+            <div id="themes-panel" class="shop-panel hidden">
+                <div id="themes-grid" class="shop-grid"></div>
+            </div>
+            
+            <button id="shop-back-btn" class="btn btn-secondary">← BACK</button>
         </div>
         
         <!-- Upgrade Screen -->

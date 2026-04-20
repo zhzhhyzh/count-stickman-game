@@ -53,6 +53,35 @@ export class UIManager {
             });
         });
 
+        document.getElementById('shop-btn').addEventListener('click', () => {
+            this.game.audio.init();
+            this.game.audio.playClick();
+            this.transitionOut(this.startScreen, () => {
+                this.showShop();
+            });
+        });
+
+        document.getElementById('shop-back-btn').addEventListener('click', () => {
+            if (this.game.audio.initialized) this.game.audio.playClick();
+            this.transitionOut(document.getElementById('shop-screen'), () => {
+                this.transitionIn(this.startScreen);
+            });
+        });
+
+        document.getElementById('tab-skins').addEventListener('click', () => {
+            document.getElementById('tab-skins').classList.add('active');
+            document.getElementById('tab-themes').classList.remove('active');
+            document.getElementById('skins-panel').classList.remove('hidden');
+            document.getElementById('themes-panel').classList.add('hidden');
+        });
+
+        document.getElementById('tab-themes').addEventListener('click', () => {
+            document.getElementById('tab-themes').classList.add('active');
+            document.getElementById('tab-skins').classList.remove('active');
+            document.getElementById('themes-panel').classList.remove('hidden');
+            document.getElementById('skins-panel').classList.add('hidden');
+        });
+
         document.getElementById('back-btn').addEventListener('click', () => {
             if (this.game.audio.initialized) this.game.audio.playClick();
             this.transitionOut(this.upgradeScreen, () => {
@@ -196,6 +225,7 @@ export class UIManager {
         this.upgradeScreen.classList.add('hidden');
         this.winScreen.classList.add('hidden');
         this.loseScreen.classList.add('hidden');
+        document.getElementById('shop-screen').classList.add('hidden');
         this.hud.style.display = 'none';
     }
 
@@ -240,6 +270,133 @@ export class UIManager {
         this.upgradeCrowdBtn.textContent = `🪙 ${this.game.crowdUpgrade * 50}`;
         this.upgradeStrengthBtn.textContent = `🪙 ${this.game.strengthUpgrade * 75}`;
         this.coinDisplay.textContent = `🪙 ${this.game.coins}`;
+    }
+
+    // ============ SHOP ============
+    showShop() {
+        const shopScreen = document.getElementById('shop-screen');
+        this.transitionIn(shopScreen);
+        this.renderShop();
+    }
+
+    renderShop() {
+        document.getElementById('shop-coins').textContent = `🪙 ${this.game.coins}`;
+        this.renderSkins();
+        this.renderThemes();
+    }
+
+    renderSkins() {
+        const grid = document.getElementById('skins-grid');
+        grid.innerHTML = '';
+        this.game.skins.forEach(skin => {
+            const item = document.createElement('div');
+            item.className = 'shop-item';
+            if (skin.owned) item.classList.add('owned');
+            if (skin.id === this.game.equippedSkin) item.classList.add('equipped');
+
+            const preview = document.createElement('div');
+            preview.className = 'skin-preview';
+            preview.style.background = '#' + skin.color.toString(16).padStart(6, '0');
+            if (skin.id === 'rainbow') {
+                preview.style.background = 'linear-gradient(135deg, red, orange, yellow, green, blue, purple)';
+            }
+            item.appendChild(preview);
+
+            const name = document.createElement('div');
+            name.className = 'item-name';
+            name.textContent = skin.name;
+            item.appendChild(name);
+
+            const price = document.createElement('div');
+            price.className = 'item-price';
+            if (skin.id === this.game.equippedSkin) {
+                price.textContent = '✓ Equipped';
+                price.classList.add('owned-label');
+            } else if (skin.owned) {
+                price.textContent = 'Tap to equip';
+                price.classList.add('owned-label');
+            } else if (skin.shareUnlock) {
+                price.textContent = '📤 Share';
+                price.classList.add('free');
+            } else {
+                price.textContent = `🪙 ${skin.price}`;
+            }
+            item.appendChild(price);
+
+            item.addEventListener('click', () => this.onSkinClick(skin));
+            grid.appendChild(item);
+        });
+    }
+
+    renderThemes() {
+        const grid = document.getElementById('themes-grid');
+        grid.innerHTML = '';
+        this.game.themes.forEach(theme => {
+            const item = document.createElement('div');
+            item.className = 'shop-item';
+            if (theme.owned) item.classList.add('owned');
+            if (theme.id === this.game.equippedTheme) item.classList.add('equipped');
+
+            const preview = document.createElement('div');
+            preview.className = 'theme-preview';
+            preview.style.background = `linear-gradient(180deg, ${theme.colors[0]}, ${theme.colors[2]}, ${theme.colors[4]})`;
+            item.appendChild(preview);
+
+            const name = document.createElement('div');
+            name.className = 'item-name';
+            name.textContent = theme.name;
+            item.appendChild(name);
+
+            const price = document.createElement('div');
+            price.className = 'item-price';
+            if (theme.id === this.game.equippedTheme) {
+                price.textContent = '✓ Equipped';
+                price.classList.add('owned-label');
+            } else if (theme.owned) {
+                price.textContent = 'Tap to equip';
+                price.classList.add('owned-label');
+            } else {
+                price.textContent = `🪙 ${theme.price}`;
+            }
+            item.appendChild(price);
+
+            item.addEventListener('click', () => this.onThemeClick(theme));
+            grid.appendChild(item);
+        });
+    }
+
+    onSkinClick(skin) {
+        if (skin.id === this.game.equippedSkin) return;
+        if (skin.owned) {
+            this.game.equipSkin(skin.id);
+            if (this.game.audio.initialized) this.game.audio.playClick();
+        } else if (skin.shareUnlock) {
+            const url = window.location.href;
+            navigator.clipboard.writeText(`Check out Count Masters! ${url}`).catch(() => {});
+            this.game.shareForSkin(skin.id);
+            if (this.game.audio.initialized) this.game.audio.playGateGood();
+            this.floatingText('+🎨 Rainbow unlocked!', '#4CAF50');
+        } else {
+            if (this.game.buySkin(skin.id)) {
+                if (this.game.audio.initialized) this.game.audio.playGateGood();
+                this.floatingText(`-${skin.price} 🪙`, '#ffd700');
+            }
+        }
+        this.renderShop();
+    }
+
+    onThemeClick(theme) {
+        if (theme.id === this.game.equippedTheme) return;
+        if (theme.owned) {
+            this.game.equipTheme(theme.id);
+            if (this.game.audio.initialized) this.game.audio.playClick();
+        } else {
+            if (this.game.buyTheme(theme.id)) {
+                if (this.game.audio.initialized) this.game.audio.playGateGood();
+                this.floatingText(`-${theme.price} 🪙`, '#ffd700');
+            }
+        }
+        this.renderShop();
     }
 
     showWin(coins) {
