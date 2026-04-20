@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Count Masters: Stickman Games</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <!-- HUD -->
+        <div id="hud">
+            <div id="level-display">Level 1</div>
+            <div id="coin-display">🪙 0</div>
+            <div id="count-display">👥 1</div>
+        </div>
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h1>COUNT MASTERS</h1>
+            <p>Stickman Games</p>
+            <button id="play-btn" class="btn">▶ PLAY</button>
+            <button id="upgrade-btn" class="btn btn-secondary">⬆ UPGRADES</button>
+        </div>
+        
+        <!-- Upgrade Screen -->
+        <div id="upgrade-screen" class="screen hidden">
+            <h2>UPGRADES</h2>
+            <div class="upgrade-item">
+                <span>Starting Crowd</span>
+                <span id="crowd-level">Lv. 1</span>
+                <button id="upgrade-crowd-btn" class="btn btn-small">🪙 50</button>
+            </div>
+            <div class="upgrade-item">
+                <span>Strength</span>
+                <span id="strength-level">Lv. 1</span>
+                <button id="upgrade-strength-btn" class="btn btn-small">🪙 75</button>
+            </div>
+            <button id="back-btn" class="btn btn-secondary">← BACK</button>
+        </div>
+        
+        <!-- Win Screen -->
+        <div id="win-screen" class="screen hidden">
+            <h2>🎉 LEVEL COMPLETE!</h2>
+            <p id="win-coins">+0 🪙</p>
+            <button id="next-btn" class="btn">NEXT LEVEL →</button>
+        </div>
+        
+        <!-- Lose Screen -->
+        <div id="lose-screen" class="screen hidden">
+            <h2>💀 DEFEATED!</h2>
+            <p>Your crowd was overwhelmed!</p>
+            <button id="retry-btn" class="btn">🔄 RETRY</button>
+        </div>
+    </div>
+    
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
