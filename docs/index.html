@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Count Masters: Stickman Games</title>
+    <meta name="description" content="A 3D hyper-casual stickman runner game built with Three.js">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏃</text></svg>">
+  <script type="module" crossorigin src="/count-stickman-game/assets/index-DZi60Sjf.js"></script>
+  <link rel="stylesheet" crossorigin href="/count-stickman-game/assets/index-ClMpQPjF.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <!-- HUD -->
+        <div id="hud">
+            <div id="level-display">Level 1</div>
+            <div id="coin-display">🪙 0</div>
+            <div id="count-display">👥 1</div>
+        </div>
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h1>COUNT MASTERS</h1>
+            <p>Stickman Games</p>
+            <button id="play-btn" class="btn">▶ PLAY</button>
+            <button id="shop-btn" class="btn btn-secondary">🛒 SHOP</button>
+            <button id="upgrade-btn" class="btn btn-secondary">⬆ UPGRADES</button>
+        </div>
+        
+        <!-- Shop Screen -->
+        <div id="shop-screen" class="screen hidden">
+            <h2>🛒 SHOP</h2>
+            <p id="shop-coins" class="shop-coins">🪙 0</p>
+            
+            <div class="shop-tabs">
+                <button id="tab-skins" class="shop-tab active">🎨 Skins</button>
+                <button id="tab-themes" class="shop-tab">🌄 Themes</button>
+            </div>
+            
+            <div id="skins-panel" class="shop-panel">
+                <div id="skins-grid" class="shop-grid"></div>
+            </div>
+            
+            <div id="themes-panel" class="shop-panel hidden">
+                <div id="themes-grid" class="shop-grid"></div>
+            </div>
+            
+            <button id="shop-back-btn" class="btn btn-secondary">← BACK</button>
+        </div>
+        
+        <!-- Upgrade Screen -->
+        <div id="upgrade-screen" class="screen hidden">
+            <h2>UPGRADES</h2>
+            <div class="upgrade-item">
+                <span>Starting Crowd</span>
+                <span id="crowd-level">Lv. 1</span>
+                <button id="upgrade-crowd-btn" class="btn btn-small">🪙 50</button>
+            </div>
+            <div class="upgrade-item">
+                <span>Strength</span>
+                <span id="strength-level">Lv. 1</span>
+                <button id="upgrade-strength-btn" class="btn btn-small">🪙 75</button>
+            </div>
+            <button id="back-btn" class="btn btn-secondary">← BACK</button>
+        </div>
+        
+        <!-- Win Screen -->
+        <div id="win-screen" class="screen hidden">
+            <h2>🎉 LEVEL COMPLETE!</h2>
+            <p id="win-coins">+0 🪙</p>
+            <p id="win-total-coins" style="font-size: 14px; opacity: 0.8;">Total: 🪙 0</p>
+            <div id="win-upgrades">
+                <div class="upgrade-item">
+                    <span>Starting Crowd</span>
+                    <span id="win-crowd-level">Lv. 1</span>
+                    <button id="win-upgrade-crowd-btn" class="btn btn-small">🪙 50</button>
+                </div>
+                <div class="upgrade-item">
+                    <span>Strength</span>
+                    <span id="win-strength-level">Lv. 1</span>
+                    <button id="win-upgrade-strength-btn" class="btn btn-small">🪙 75</button>
+                </div>
+            </div>
+            <button id="next-btn" class="btn">NEXT LEVEL →</button>
+        </div>
+        
+        <!-- Lose Screen -->
+        <div id="lose-screen" class="screen hidden">
+            <h2>💀 DEFEATED!</h2>
+            <p>Your crowd was overwhelmed!</p>
+            <button id="retry-btn" class="btn">🔄 RETRY</button>
+        </div>
+    </div>
+    
+</body>
+</html>
