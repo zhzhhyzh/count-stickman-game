@@ -51,7 +51,13 @@ export class CrowdManager {
     }
 
     addStickmanToGroup(index) {
-        const color = this.game ? this.game.getPlayerColor() : 0x2196F3;
+        let color;
+        if (this.game && this.game.equippedSkin === 'rainbow') {
+            const rainbowColors = [0xFF1744, 0xFF9100, 0xFFEA00, 0x00E676, 0x2979FF, 0xD500F9];
+            color = rainbowColors[index % rainbowColors.length];
+        } else {
+            color = this.game ? this.game.getPlayerColor() : 0x2196F3;
+        }
         const stickman = this.createStickman(color);
         const pos = this.getFormationPosition(index);
         stickman.position.set(pos.x, 0, pos.z);
@@ -132,7 +138,14 @@ export class CrowdManager {
             if (this.playerStickmen.length > 1) {
                 const stickman = this.playerStickmen.pop();
                 // Instead of just removing, launch it as a ragdoll
-                this.launchRagdoll(stickman, this.game ? this.game.getPlayerColor() : 0x2196F3);
+                let ragdollColor;
+                if (this.game && this.game.equippedSkin === 'rainbow') {
+                    const rainbowColors = [0xFF1744, 0xFF9100, 0xFFEA00, 0x00E676, 0x2979FF, 0xD500F9];
+                    ragdollColor = rainbowColors[Math.floor(Math.random() * rainbowColors.length)];
+                } else {
+                    ragdollColor = this.game ? this.game.getPlayerColor() : 0x2196F3;
+                }
+                this.launchRagdoll(stickman, ragdollColor);
                 this.playerGroup.remove(stickman);
             }
         }

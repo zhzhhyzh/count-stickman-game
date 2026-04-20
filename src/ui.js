@@ -371,11 +371,25 @@ export class UIManager {
             this.game.equipSkin(skin.id);
             if (this.game.audio.initialized) this.game.audio.playClick();
         } else if (skin.shareUnlock) {
-            const url = window.location.href;
-            navigator.clipboard.writeText(`Check out Count Masters! ${url}`).catch(() => {});
-            this.game.shareForSkin(skin.id);
-            if (this.game.audio.initialized) this.game.audio.playGateGood();
-            this.floatingText('+🎨 Rainbow unlocked!', '#4CAF50');
+            // Use native share if available, otherwise copy link
+            const shareData = {
+                title: 'Count Masters: Stickman Games',
+                text: 'Check out this awesome stickman runner game!',
+                url: window.location.href
+            };
+            if (navigator.share) {
+                navigator.share(shareData).then(() => {
+                    this.game.shareForSkin(skin.id);
+                    if (this.game.audio.initialized) this.game.audio.playGateGood();
+                    this.floatingText('+🎨 Rainbow unlocked!', '#4CAF50');
+                    this.renderShop();
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`).catch(() => {});
+                this.game.shareForSkin(skin.id);
+                if (this.game.audio.initialized) this.game.audio.playGateGood();
+                this.floatingText('Link copied + 🎨 Rainbow!', '#4CAF50');
+            }
         } else {
             if (this.game.buySkin(skin.id)) {
                 if (this.game.audio.initialized) this.game.audio.playGateGood();
